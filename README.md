@@ -2,8 +2,8 @@
 
 Two **native Railway Functions**, written directly in TypeScript and executed by Bun:
 
-- `functions/start.ts`: starts an existing service, weekdays at **08:00 UTC**.
-- `functions/stop.ts`: stops it, weekdays at **18:00 UTC**.
+- `functions/start.ts`: starts an existing service, every day at **08:00 UTC**.
+- `functions/stop.ts`: stops it, every day at **23:00 UTC**.
 
 No dependencies, package manager, transpilation, bundling, tests or build step.
 
@@ -40,8 +40,8 @@ The documented route is to create the two native Functions in a dedicated Railwa
 ```sh
 railway login
 railway link
-railway functions new --path functions/start.ts --name start-target --cron '0 8 * * 1-5' --http false --serverless false --watch false
-railway functions new --path functions/stop.ts --name stop-target --cron '0 18 * * 1-5' --http false --serverless false --watch false
+railway functions new --path functions/start.ts --name start-target --cron '0 8 * * *' --http false --serverless false --watch false
+railway functions new --path functions/stop.ts --name stop-target --cron '0 23 * * *' --http false --serverless false --watch false
 ```
 
 1. Configure each Function's restart policy as **Never**, plus the target variables/references above.
