@@ -1,0 +1,12 @@
+{
+  "name": "schedule-railway-service-template",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "scripts": {
+    "build": "bun run scripts/build.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2"
+  }
+}

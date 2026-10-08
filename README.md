@@ -5,7 +5,7 @@ Two **native Railway Functions**, written directly in TypeScript and executed by
 - `functions/start.ts`: starts an existing service, every day at **08:00 UTC**.
 - `functions/stop.ts`: stops it, every day at **23:00 UTC**.
 
-No dependencies, package manager, transpilation, bundling, tests or build step.
+The Functions have no runtime dependencies, transpilation or bundling. Contributor tooling uses Bun, with `package.json`, `bun.lock` and `scripts/build.ts`; no tests or CI are included.
 
 ## Why does the template use `services`?
 
@@ -55,17 +55,22 @@ No registered template URL or authenticated deployment is claimed by this reposi
 
 ## Edit and run
 
-Edit the two `.ts` files directly. No `npm install`, `bun install` or compilation is needed. For Functions linked through the CLI:
+Install the locked development dependencies, edit the two Function files, and refresh the template:
+
+```sh
+bun install --frozen-lockfile
+bun run build
+```
+
+`scripts/build.ts` reads `functions/start.ts` and `functions/stop.ts`, encodes their original bytes as Base64, and updates the corresponding `deploy.startCommand` entries in `template.json`. It preserves service IDs, images, schedules and variables. No TypeScript compilation or JavaScript bundles are produced. The script rejects missing/duplicate Function services, empty sources and encoded commands exceeding Railway CLI's size limit before writing the template. Commit the refreshed `template.json` alongside source changes.
+
+`package.json` and `bun.lock` are development tooling, not inputs to the deployed inline Functions. `@types/bun` provides editor types; add other packages with `bun add` or `bun add --dev` as needed. Railway automatically installs packages imported by native Functions, independently of this repository's lockfile. Pin runtime versions in the imports using `package@version` syntax when reproducibility matters. Keep each Function self-contained: local helper files are not included by this build script.
+
+For Functions linked through the CLI, push the original TypeScript directly:
 
 ```sh
 railway functions push --path functions/start.ts
 railway functions push --path functions/stop.ts
-```
-
-After editing a source file, refresh the inline TypeScript in `template.json` using Bun:
-
-```sh
-bun -e 'const t = await Bun.file("template.json").json(); for (const s of Object.values(t.services)) { const name = s.name === "start-target" ? "start" : "stop"; s.deploy.startCommand = "./run.sh " + Buffer.from(await Bun.file(`functions/${name}.ts`).text()).toString("base64"); } await Bun.write("template.json", JSON.stringify(t, null, 2) + "\n");'
 ```
 
 Edit `deploy.cronSchedule` before registering the template, or the **Cron Schedule** setting after deployment. Schedules use five-field expressions in **UTC**, without daylight saving adjustment. Runs must be at least five minutes apart, including hour boundaries: `*/5 * * * *` is valid, while `*/7 * * * *` is not. Railway does not guarantee minute-exact execution.
